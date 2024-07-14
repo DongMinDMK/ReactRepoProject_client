@@ -7,6 +7,7 @@ import JoinForm from "./component/member/JoinForm";
 import MemberUpdate from "./component/member/MemberUpdate"
 import BoardView from "./component/board/BoardView";
 import WriteBoard from "./component/board/WriteBoard"
+import UpdateBoard from "./component/board/UpdateBoard"
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/memberUpdate" element={<MemberUpdate></MemberUpdate>}></Route>
         <Route path="/boardView/:num" element={<BoardView></BoardView>}></Route>
         <Route path="/writeBoard" element={<WriteBoard></WriteBoard>}></Route>
+        <Route path="/updateBoard/:num" element={<UpdateBoard></UpdateBoard>}></Route>
       </Routes> 
     </div>
   );

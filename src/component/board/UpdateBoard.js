@@ -1,25 +1,44 @@
 import React, {useState, useEffect} from 'react'
 import axios from 'axios';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import '../../style/board.css';
 
-function WriteBoard() {
+function UpdateBoard() {
 
     const [loginUser, setLoginUser] = useState({});
-    const [pass, setPass] = useState("");
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
+    const [pass, setPass] = useState("");
+    const [oldPass, setOldPass] = useState("");
     const [image, setImage] = useState("");
     const [savefilename, setSavefilename] = useState("");
     const [imgStyle, setImgStyle] = useState({display:"block"});
     const [imgSrc, setImgSrc] = useState("http://via.placeholder.com/200x150");
+    const [oldImgSrc, setOldImgSrc] = useState("")
     const navigate = useNavigate();
-
+    const { num } = useParams();
+    
     useEffect(()=>{
         axios.get("/api/members/getMember")
         .then((result)=>{
             setLoginUser(result.data);            
+        })
+    },[]
+    )
+
+    useEffect(()=>{
+        axios.get(`/api/boards/getBoard/${num}`)
+        .then((result)=>{
+            setPass(result.data.pass);
+            setTitle(result.data.title);
+            setContent(result.data.content);
+            setOldImgSrc(`http://localhost:5000/img/${result.data.savefilename}`)
+            setSavefilename(result.data.savefilename);
+            setOldPass(result.data.pass);
+        })
+        .catch((err)=>{
+            console.error(err);
         })
     },[]
     )
@@ -35,33 +54,25 @@ function WriteBoard() {
     }
 
     function onSubmit(){
-        if(!pass){
-            return window.alert("비밀번호를 입력해주세요.");
-        }
-        if(!title){
-            return window.alert("게시글 제목을 입력해주세요");
-        }
-        if(!content){
-            return window.alert("게시글 내용을 입력해주세요");
+
+        if(pass != oldPass){
+            return window.alert("비밀번호 확인이 일치하지 않습니다.");
         }
 
-        axios.post("/api/boards/insertBoard", {userid:loginUser.userid, pass:pass, email:loginUser.email, title:title, content:content, image:image, savefilename:savefilename})
-        .then((result)=>{
-            window.alert("정상적으로 게시물 등록이 완료되었습니다.");
-            navigate("/main");
-        })
-        .catch((err)=>{
-            window.alert("알수 없는 이유로 게시물 등록을 진행하실 수 없습니다.");
-            console.error(err);
-            navigate("/writeBoard");
-        })
+        axios.post(`/api/boards/updateBoard/${num}`, {title:title, content:content, image:image, savefilename:savefilename})
+        .then(()=>{
+            window.alert("수정이 정상적으로 완료되었습니다.");
+            navigate(`/boardView/${num}`);
+         })
+         .catch((err)=>{
+          console.error(err);
+         })
     }
-
 
   return (
     <div>
       <div className='writeBoard'>
-            <h2>Board Write Form</h2>
+            <h2>Board Update Form</h2>
             <div className='field'>
                 <label>작성자</label><input type="text" value={loginUser.userid} readOnly/>
             </div>
@@ -85,13 +96,17 @@ function WriteBoard() {
                     (e)=>{ setContent( e.currentTarget.value ) }
                 }></textarea>
             </div>
+            <div className="field">
+                <label>기존 이미지</label>
+                <div><img src={oldImgSrc} style={{width:"300px"}} alt=""></img></div>
+            </div>
             <div className='field'>
-                <label>이미지</label>
+                <label>수정할 이미지</label>
                 <input type="file" onChange={(e)=>{ onFileUpload(e); }  }/>
                 {/* e 를 전달인수로 전달해야 해당함수에서 방금 선택한 이미지를 인식할 수 있습니다. */}
             </div>
             <div className='field'>
-                <label>이미지 미리보기</label>
+                <label>수정할 이미지 미리보기</label>
                 <div><img src={imgSrc} style={imgStyle} alt=""/></div>
             </div>
             <div className='btns'>
@@ -103,5 +118,4 @@ function WriteBoard() {
   )
 }
 
-// 테스트
-export default WriteBoard
+export default UpdateBoard
